@@ -12,21 +12,21 @@ description: shell命令使用規範。此skill必讀
 
 ## 避免轉義與命令嵌套
 
-- 多用heredoc來避免轉義, 少用引號字符串字面量。避免以下常見錯誤做法:
-  - `sh -c 'some command'`
-  - `bash -c 'some command'`
-  - `su -c 'some command'`
-  - `eval "some command"`
-  - `ssh user@ip "some command"`
-  - …
-- 若某命令支持從stdin讀輸入就優先用stdin配heredoc
-  - 例```sh
+- 多用heredoc來避免轉義, 少用引號字符串字面量。
+- 若某命令支持從stdin讀輸入就優先用stdin配heredoc 凡是能用stdin/heredoc的 就絕對禁止`bash -c ''`式的字符串！ 避免以下常見錯誤做法:
+  - ❌`sh -c 'some command'`
+  - ❌`bash -c 'some command'`
+  - ❌`su -c 'some command'`
+  - ❌`eval "some command"`
+  - ❌`ssh user@ip "some command"`
+  - …正確示例:
+  ```sh
   bash <<'EOF'
   some command
   EOF
   ```
-- 若不支持從stdin讀輸入就用`"$(cat <<'EOF'...)"`
-  - 例(bash是支持從stdin讀的 這裏只是爲了舉例)```sh
+- 若不支持從stdin讀輸入就用`"$(cat <<'EOF'...)"` 例(bash是支持從stdin讀的 這裏只是爲了舉例):
+  ```sh
   bash -c "$(cat <<'EOF'
   some command
   EOF
@@ -36,6 +36,8 @@ description: shell命令使用規範。此skill必讀
   - `$var`,`${var}`會變量展開
   - `$(cmd)`會命令替換
   - `\`會轉義
+
+### 綜合示例
 
 錯誤示例
 
@@ -62,3 +64,8 @@ EOF
 需要寫臨時的複雜腳本時用CsSh寫 .csx文件, 用dotnet-script執行。 不用pwsh/bash等來寫。 bash/pwsh能做的事情 CsSh全都能做。 具體寫法看tsinswreng-cssh skill。 注意應按需加載skill, 當你不需要寫時就不要浪費時間讀無關skill。
 
 當腳本代碼行數超過16行你就應該考慮用CsSh寫。
+
+## 再次強調
+
+- **絕對禁止** `bash -c ''` / `su -c`之類的寫法! 一律用stdin配heredoc
+- 複雜腳本用CsSh寫。當腳本代碼行數超過16行你就應該考慮用CsSh寫。
